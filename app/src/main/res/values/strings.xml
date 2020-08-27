@@ -10,8 +10,8 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
 
-    <string name="menu_home">Home</string>
-    <string name="menu_gallery">Gallery</string>
+    <string name="menu_notes">Notes</string>
+    <string name="menu_courses">Courses</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="menu_tools">Tools</string>
     <string name="menu_share">Share</string>
@@ -19,4 +19,8 @@
 
     <string name="open_nav_description">Open navigation drawer</string>
     <string name="close_nav_description">Close navigation drawer</string>
+    <string name="note_title_hint">Note Title</string>
+    <string name="note_text_hint">Note Text</string>
+    <string name="nav_share_message">Don\'t you think you\'ve shared enough</string>
+    <string name="nav_send_message">Send</string>
 </resources>
