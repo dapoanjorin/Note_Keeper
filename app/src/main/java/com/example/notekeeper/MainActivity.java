@@ -2,6 +2,7 @@ package com.example.notekeeper;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -38,12 +39,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private GridLayoutManager mCoursesLayoutManager;
 
+    private NoteKeeperOpenHelper mDbOpenHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mDbOpenHelper = new NoteKeeperOpenHelper(this);
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +81,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         initializeDisplayContent();
+    }
+
+    @Override
+    protected void onDestroy() {
+        mDbOpenHelper.close();
+        super.onDestroy();
     }
 
     @Override
@@ -114,6 +126,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void displayNotes() {
         mRecyclerItems.setLayoutManager(mNotesListManager);
         mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
+
+        SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
 
         selectNavigationMenuItem(R.id.nav_notes);
     }
