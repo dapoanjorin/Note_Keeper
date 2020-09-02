@@ -9,5 +9,5 @@
     <item android:title="Cancel" android:id="@+id/action_cancel" android:icon="@android:drawable/ic_menu_revert"
           app:showAsAction="ifRoom|withText"/>
     <item android:title="Next" android:id="@+id/action_next" android:icon="@android:drawable/ic_media_next"
-          app:showAsAction="ifRoom|withText"/>
+          app:showAsAction="ifRoom|withText" android:visible="false"/>
 </menu>
