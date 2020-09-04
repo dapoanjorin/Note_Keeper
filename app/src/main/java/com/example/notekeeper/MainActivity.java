@@ -1,6 +1,9 @@
 package com.example.notekeeper;
 
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -32,7 +35,8 @@ import java.util.List;
 
 import static com.example.notekeeper.NoteKeeperDatabaseContract.*;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     private AppBarConfiguration mAppBarConfiguration;
 
@@ -41,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private LinearLayoutManager mNotesListManager;
     private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private GridLayoutManager mCoursesLayoutManager;
+
+    private final int LOADER_NOTES = 0;
 
     private NoteKeeperOpenHelper mDbOpenHelper;
 
@@ -95,8 +101,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onResume() {
         super.onResume();
-       loadNotes();
+
+        getLoaderManager().restartLoader(LOADER_NOTES, null, this);
+
         updateNavHeader();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        CursorLoader loader = null;
+        if (id == LOADER_NOTES) {
+            loader = new CursorLoader(this) {
+                @Override
+                public Cursor loadInBackground() {
+                    SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
+                    final String[] noteColumns = {
+                            NoteInfoEntry._ID,
+                            NoteInfoEntry.COLUMN_NOTE_TITLE,
+                            NoteInfoEntry.COLUMN_COURSE_ID};
+                    final String noteOrderBy = NoteInfoEntry.COLUMN_COURSE_ID +
+                            "," + NoteInfoEntry.COLUMN_NOTE_TITLE;
+                    return db.query(NoteInfoEntry.TABLE_NAME, noteColumns,
+                            null, null, null, null, noteOrderBy);
+                }
+            };
+        }
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader loader, Cursor data) {
+        if (loader.getId() == LOADER_NOTES) {
+            mNoteRecyclerAdapter.changeCursor(data);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader loader) {
+        if (loader.getId() == LOADER_NOTES) {
+            mNoteRecyclerAdapter.changeCursor(null);
+        }
+
     }
 
     private void loadNotes() {
@@ -161,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         int id = item.getItemId();
 
-        if(id == R.id.action_settings) {
+        if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
@@ -195,10 +240,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             displayNotes();
         } else if (id == R.id.nav_courses) {
             displayCourses();
-        } else if(id == R.id.nav_share) {
-           // handleSelection(R.string.nav_share_message);
+        } else if (id == R.id.nav_share) {
+            // handleSelection(R.string.nav_share_message);
             handleShare();
-        } else if(id == R.id.nav_send) {
+        } else if (id == R.id.nav_send) {
             handleSelection(R.string.nav_send_message);
         }
 
@@ -208,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void handleShare() {
         View view = findViewById(R.id.list_items);
         Snackbar.make(view, "Share to - " + PreferenceManager.getDefaultSharedPreferences(this)
-                .getString("user_favorite_social", "")
+                        .getString("user_favorite_social", "")
                 , Snackbar.LENGTH_LONG).show();
     }
 
@@ -226,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment  );
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
