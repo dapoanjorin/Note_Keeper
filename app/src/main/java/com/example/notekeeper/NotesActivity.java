@@ -469,6 +469,7 @@ public class NotesActivity extends AppCompatActivity
 
         getLoaderManager().initLoader(LOADER_COURSES, null, this);
 
+
         readDisplayStateValues();
         if(savedInstanceState == null) {
             saveOriginalNoteValues();

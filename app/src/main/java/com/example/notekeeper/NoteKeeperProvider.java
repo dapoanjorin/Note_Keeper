@@ -6,6 +6,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.provider.BaseColumns;
 
 import static com.example.notekeeper.NoteKeeperDatabaseContract.*;
 import static com.example.notekeeper.NoteKeeperProviderContract.*;
@@ -18,10 +19,14 @@ public class NoteKeeperProvider extends ContentProvider {
 
     public static final int NOTES = 1;
 
+    public static final int NOTES_EXPANDED = 2;
+
     private static UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
+
         sUriMatcher.addURI(AUTHORITY, Courses.PATH, COURSES);
-        sUriMatcher.addURI(AUTHORITY, Notes.PATH, NOTES);
+        sUriMatcher.addURI(AUTHORITY, Notes.PATH, NOTES_EXPANDED);
+        sUriMatcher.addURI(AUTHORITY, Notes.PATH_EXPANDED, NOTES_EXPANDED);
 
     }
 
@@ -69,9 +74,31 @@ public class NoteKeeperProvider extends ContentProvider {
                 cursor = db.query(NoteInfoEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
                 break;
+            case NOTES_EXPANDED:
+                    cursor = notesExpandedQuery(db, projection, selection, selectionArgs, sortOrder);
+                break;
 
         }
         return cursor;
+    }
+
+    private Cursor notesExpandedQuery(SQLiteDatabase db, String[] projection, String selection,
+                                      String[] selectionArgs, String sortOrder) {
+
+        String[] columns = new String[projection.length];
+        for(int idx=0; idx < projection.length; idx++) {
+            columns[idx] = projection[idx].equals(BaseColumns._COUNT) ||
+                    projection[idx].equals(CoursesIdColumns.COLUMN_COURSE_ID) ?
+                    NoteInfoEntry.getQName(projection[idx]) : projection[idx];
+        }
+
+        String tablesWithJoin = NoteInfoEntry.TABLE_NAME + " JOIN " +
+                CourseInfoEntry.getQName(CourseInfoEntry.TABLE_NAME) + " ON " +
+                NoteInfoEntry.getQName(NoteInfoEntry.COLUMN_COURSE_ID) + " = " +
+                CourseInfoEntry.getQName(CourseInfoEntry.COLUMN_COURSE_ID);
+
+        return db.query(tablesWithJoin, columns, selection, selectionArgs, null, null, sortOrder);
+
     }
 
     @Override
